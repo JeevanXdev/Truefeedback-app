@@ -1,4 +1,4 @@
-// src/app/api/auth/verify-otp/route.ts
+
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { connectDb } from "@/lib/db";

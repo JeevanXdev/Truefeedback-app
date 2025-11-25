@@ -1,20 +1,43 @@
-import nodemailer from "nodemailer";
+import nodemailer, { Transporter } from "nodemailer";
 import { getEnv } from "@/lib/env";
 
-const transporter = nodemailer.createTransport({
-  host: getEnv("SMTP_HOST"),
-  port: Number(getEnv("SMTP_PORT")),
+// Load config once
+const smtpHost = getEnv("SMTP_HOST");
+const smtpPort = Number(getEnv("SMTP_PORT"));
+const smtpUser = getEnv("SMTP_USER");
+const smtpPass = getEnv("SMTP_PASS");
+const emailFrom = getEnv("EMAIL_FROM");
+
+// Create reusable transporter
+const transporter: Transporter = nodemailer.createTransport({
+  host: smtpHost,
+  port: smtpPort,
+  secure: smtpPort === 465, // auto-detect secure mode
   auth: {
-    user: getEnv("SMTP_USER"),
-    pass: getEnv("SMTP_PASS"),
+    user: smtpUser,
+    pass: smtpPass,
   },
 });
 
-export async function sendEmail(to: string, subject: string, html: string) {
-  await transporter.sendMail({
-    from: getEnv("EMAIL_FROM"),
-    to,
-    subject,
-    html,
-  });
+// Optional: verify connection once on startup
+transporter.verify().catch((err) => {
+  console.error("❌ SMTP connection failed:", err);
+});
+
+export async function sendEmail(
+  to: string,
+  subject: string,
+  html: string
+): Promise<void> {
+  try {
+    await transporter.sendMail({
+      from: emailFrom,
+      to,
+      subject,
+      html,
+    });
+  } catch (err) {
+    console.error("❌ Failed to send email:", err);
+    throw new Error("Email sending failed");
+  }
 }

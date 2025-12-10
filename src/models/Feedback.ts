@@ -1,4 +1,3 @@
-// src/models/Feedback.ts
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IFeedback extends Document {
